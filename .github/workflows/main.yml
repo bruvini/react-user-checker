@@ -10,11 +10,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Configuração do Node
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v6
       with:
-        node-version: '14'
+        node-version: '16'
     - name: Instalação de dependências
       run: npm install
     - name: Build e push no Docker
@@ -27,11 +27,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Configuração do Node
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v6
       with:
-        node-version: '14'
+        node-version: '16'
     - name: Instalação de dependências
       run: npm install
     - name: Testes de Segurança (SAST)
@@ -41,9 +41,9 @@ jobs:
     needs: sast
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Configuração do ambiente Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.x'
     - name: Executando script Python
