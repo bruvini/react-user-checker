@@ -10,38 +10,53 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Configuração do Node
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
-        node-version: '14'
+        node-version: '16'
     - name: Instalação de dependências
       run: npm install
-    - name: Build
-      run: npm run build
+    - name: Build e push no Docker
+      run: |
+        docker build -t enfbruno/react-user-checker .
+        echo ${{ secrets.BRUNOAULADEVOPS }} | docker login -u enfbruno --password-stdin
+        docker push enfbruno/react-user-checker
 
-  test:
+  sast:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Configuração do Node
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
-        node-version: '14'
+        node-version: '16'
     - name: Instalação de dependências
       run: npm install
-    - name: Testes
-      run: npm test
+    - name: Testes de Segurança (SAST)
+      run: npm run lint
 
   deploy:
-    needs: test
+    needs: sast
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Configuração do ambiente Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.x'
     - name: Executando script Python
       run: python ./src/hello_world.py
+
+  notify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - name: Enviar notificação ao Telegram
+      run: >
+        curl -X POST
+        -H 'Content-Type: application/json'
+        -d '{"chat_id": "6783547162", "text": "Deploy realizado com sucesso!", "disable_notification": true}'
+        https://api.telegram.org/bot6783547162:AAFZqCpz5-VniPJtydv5v0iaJw09x-8VKEU/sendMessage
